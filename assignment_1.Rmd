@@ -1,0 +1,37 @@
+---
+title: "Assignment_1"
+author: "Juliet, Sydney"
+date: "9/28/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(RColorBrewer)
+library(rgeos)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(sf)
+library(sp)
+library(spData)
+library(spDataLarge)
+library(tidyverse)
+library(tmap)
+library(paletteer)
+```
+
+```{r}
+plot(world["gdpPercap"])
+```
+
+```{r}
+ggplot(data = us_states) +
+  geom_sf(aes(fill = total_pop_10)) +
+    scale_color_brewer(type = "seq", palette = 7)
+  
+
+```
+
