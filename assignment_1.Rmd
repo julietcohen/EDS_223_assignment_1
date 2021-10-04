@@ -337,6 +337,26 @@ tm_shape(tree_world_data) +
 ```
 
 ```{r}
+tree_data <- read_csv("https://raw.githubusercontent.com/owid/owid-datasets/master/datasets/Tree%20density%20(Crowther%20et%20al.%202015)/Tree%20density%20(Crowther%20et%20al.%202015).csv")
+
+options(scipen = 999)
+
+colnames(tree_data)
+
+tree_data <- tree_data %>% 
+  mutate(name_long = Entity) #%>% 
+  #mutate("Tree density (trees per km2) rounded" = floor("Tree density (trees per km2)"))
+
+# merge the data with world data from spData
+tree_world_data <- left_join(world, tree_data)
+
+# check the class and data range
+class(tree_world_data)
+class(tree_world_data$"Tree density (trees per km2)")
+min(tree_world_data$"Tree density (trees per km2)", na.rm = TRUE)
+max(tree_world_data$"Tree density (trees per km2)", na.rm = TRUE)
+# range is 0 - 72643
+
 # make the title higher than the map
 tm_shape(tree_world_data) + 
   tm_borders() + 
