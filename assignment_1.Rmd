@@ -21,6 +21,8 @@ library(spDataLarge)
 library(tidyverse)
 library(tmap)
 library(paletteer)
+library(ggsn)
+library(readr)
 ```
 
 ```{r}
@@ -28,10 +30,326 @@ plot(world["gdpPercap"])
 ```
 
 ```{r}
+us_states
+
 ggplot(data = us_states) +
   geom_sf(aes(fill = total_pop_10)) +
-    scale_color_brewer(type = "seq", palette = 7)
+    scale_color_brewer(type = "seq", palette = 7) +
+  scalebar(us_states, location = "bottomright", dist = 800, dist_unit = "km", transform = TRUE, model = 'WGS84', height = 0.03, st.dist = 0.05, box.fill = "darkblue") +
+  theme(legend.position = "left") 
   
+  
+  
+
+```
+
+```{r}
+zion = st_read((system.file("vector/zion.gpkg", package = "spDataLarge")))
+data(nlcd, package = "spDataLarge")
+```
+
+
+```{r}
+
+zion <- data.frame()
+
+zion <- as.data.frame(zion)
+
+ggplot(data = zion) +
+  geom_sf()
+
+```
+```{r}
+map_nz = tm_shape(nz) + tm_polygons()
+class(map_nz)
+map_nz
+```
+
+```{r}
+coffee_data <- as.data.frame(coffee_data)
+
+ggplot(data = world, aes(fill = coffee_data)) +
+  geom_sf()
+
+
+```
+
+```{r}
+
+# basic new zealand map
+
+t_map_nz <- tm_shape(nz) +
+  tm_fill(col = "Land_area") +
+  tm_borders() +
+  tm_dots() +
+  tm_polygons("Population", palette = "Y10rBr") +
+  tm_compass(type = "8star", position = "right") +
+  tm_scale_bar(breaks = c(0, 100, 200), text.size = 1) 
+
+t_map_nz
+
+# note that the legend comes with the land area specification in tm_fill!
+
+countries_map <- tm_shape(map_units110) +
+  tm_fill()
+countries_map
+
+
+tmap_options(check.and.fix = TRUE)
+```
+
+
+```{r}
+plot(world)
+plot(hawaii)
+
+tm_shape(hawaii) +
+  tm_fill() +
+  tm_borders() 
+```
+
+
+
+
+```{r}
+plot(st_geometry(world), col = worldbank_df$urban_pop) +
+  tm_shape() +
+  tm_fill(col = worldbank_df$urban_pop)
+  
+
+```
+
+
+```{r}
+tm_shape(world) + tm_polygons(worldbank_df$urban_pop, palette = "Blues")
+```
+
+```{r}
+tm_shape(worldbank_df) + tm_fill(col = "urban_pop")
+```
+
+```{r}
+t_map_ny <- tm_shape(us_states) +
+  tm_fill(col = "total_pop_10")# +
+  # tm_borders() +
+  # tm_dots() +
+  # tm_polygons("Population", palette = "Y10rBr") +
+  # tm_compass(type = "8star", position = "right")
+
+t_map_ny
+```
+
+
+```{r}
+
+us_states_modified <- us_states %>% 
+  filter(NAME == "New York")
+
+us_states
+  
+
+t_map_ny <- tm_shape(us_states_modified) +
+  tm_fill(col = "total_pop_10") +
+  tm_borders()
+
+
+# +
+  # tm_borders() +
+  # tm_dots() +
+  # tm_polygons("Population", palette = "Y10rBr") +
+  # tm_compass(type = "8star", position = "right")
+
+t_map_ny
+```
+
+
+
+
+```{r}
+nydata_with_ny <- nydata %>% 
+  mutate(NAME = rep("New York"))
+
+nydata_with_ny
+
+data <- left_join(nydata_with_ny, us_states)
+
+
+```
+
+
+
+```{r}
+ny_sf <- st_as_sf(nydata, coords = c("X", "Y"), crs = 4326)
+tm_shape(ny_sf) + tm_dots()
+
+ny_with_ny_sf <- st_as_sf(nydata_with_ny, coords = c("X", "Y"), crs = 4326)
+
+class(ny_with_ny_sf)
+
+ny_join <- st_join(ny_with_ny_sf, us_states_modified, by = NAME)
+
+# t_map_ny <- tm_shape(nydata) +
+#   tm_fill(col = "POP8") +
+#   tm_borders() +
+#   tm_dots()
+# 
+# t_map_ny
+
+tm_shape(us_states_modified) +
+  tm_fill(col = "total_pop_10") +
+  tm_shape(ny_sf) + tm_dots()
+```
+
+```{r}
+afcon_sf <- st_as_sf(afcon, coords = c("x", "y"), crs = 4326)
+tm_shape(afcon_sf) + tm_dots()
+
+tm_shape(afcon_sf) + tm_fill(col = "totcon")
+
+t_map_ny <- tm_shape(afcon_sf) +
+  tm_fill(col = "total_pop_10") +
+  tm_borders()
+
+plot(afcon)
+```
+
+
+```{r}
+tm_shape(world) + tm_borders() + tm_fill(col = "continent")
+```
+
+```{r}
+world_bank_join <- left_join(world, worldbank_df)
+
+tm_shape(world_bank_join) + 
+  tm_borders() + 
+  tm_fill(col = "unemployment") +
+  tm_dots()
+
+tm_shape(world_bank_join) + tm_borders() + tm_fill(col = "pop_growth")
+```
+
+
+```{r}
+# import data from github regarding deaths per PM2.5 reading
+death_data <- read_csv("https://raw.githubusercontent.com/owid/owid-datasets/master/datasets/Absolute%20deaths%20from%20ambient%20PM2.5%20air%20pollution-%20State%20of%20Global%20Air/Absolute%20deaths%20from%20ambient%20PM2.5%20air%20pollution-%20State%20of%20Global%20Air.csv")
+
+# check the countries in each col for each dataset
+countries_death_data <- unique(death_data$Entity)
+countries_death_data
+countries_world_data <- unique(world$name_long)
+countries_world_data
+
+# add a column with a names for the country to match the column name for country in world data set
+death_data_col_match <- death_data %>% 
+  mutate(name_long = Entity)
+
+death_data_col_match
+
+# merge the data with world data from spData
+death_world_data <- left_join(world, death_data_col_match)
+
+# check the class and data range
+class(death_world_data)
+class(death_world_data$"Absolute deaths from ambient PM2.5 air pollution- State of Global Air")
+min(death_world_data$"Absolute deaths from ambient PM2.5 air pollution- State of Global Air", na.rm = TRUE)
+max(death_world_data$"Absolute deaths from ambient PM2.5 air pollution- State of Global Air", na.rm = TRUE)
+
+# call the col names to plot the map
+colnames(death_world_data)
+
+# plot the death data on the world map
+
+breaks <- c(0, 900,000, 925,000, 950,000, 975,000, 100,000, 125,000)
+
+tm_shape(death_world_data) + 
+  tm_borders() + 
+  tm_fill(col = "Absolute deaths from ambient PM2.5 air pollution- State of Global Air") +
+  tm_layout(title = "Death by PM 2.5 Air Pollution by County")
+
+# try to adjust bins
+tm_shape(death_world_data) + 
+  tm_borders() + 
+  tm_fill(col = "Absolute deaths from ambient PM2.5 air pollution- State of Global Air", 
+          title = "Deaths from Ambient PM 2.4 Air Pollution") +
+  tm_layout(title = "Death by PM 2.5 Air Pollution by County")
+
+```
+
+```{r}
+covid_data <- read_csv("https://raw.githubusercontent.com/owid/owid-datasets/master/datasets/COVID-19%20Tests/COVID-19%20Tests.csv")
+
+colnames(covid_data)
+
+covid_data_col_match <- covid_data %>% 
+  mutate(name_long = Entity) #%>% 
+  #filter("Total COVID-19 tests performed" != is.na)
+
+covid_data_col_match
+
+# merge the data with world data from spData
+covid_world_data <- left_join(world, covid_data_col_match)
+
+# check the class and data range
+class(covid_world_data)
+class(covid_world_data$"Total COVID-19 tests performed")
+min(covid_world_data$"Total COVID-19 tests performed", na.rm = TRUE)
+max(covid_world_data$"Total COVID-19 tests performed", na.rm = TRUE)
+# range is 121 - 86011
+
+# plot the covid data on the world map
+
+# try to adjust bins
+tm_shape(covid_world_data) + 
+  tm_borders() + 
+  tm_fill(col = "Total COVID-19 tests performed", 
+          title = "COVID-19 Tests") +
+  tm_layout(title = "COVID-19 tests by county")
+
+```
+
+```{r}
+tree_data <- read_csv("https://raw.githubusercontent.com/owid/owid-datasets/master/datasets/Tree%20density%20(Crowther%20et%20al.%202015)/Tree%20density%20(Crowther%20et%20al.%202015).csv")
+
+options(scipen = 999)
+
+colnames(tree_data)
+
+tree_data <- tree_data %>% 
+  mutate(name_long = Entity) #%>% 
+  #mutate("Tree density (trees per km2) rounded" = floor("Tree density (trees per km2)"))
+
+# merge the data with world data from spData
+tree_world_data <- left_join(world, tree_data)
+
+# check the class and data range
+class(tree_world_data)
+class(tree_world_data$"Tree density (trees per km2)")
+min(tree_world_data$"Tree density (trees per km2)", na.rm = TRUE)
+max(tree_world_data$"Tree density (trees per km2)", na.rm = TRUE)
+# range is 0 - 72643
+
+tm_shape(tree_world_data) + 
+  tm_borders() + 
+  tm_fill(col = "Tree density (trees per km2)", 
+          title = "Tree Density (trees per km^2") +
+  tm_layout(title = "Tree Desnity: trees per km^2 by country")
+```
+
+```{r}
+# make the title higher than the map
+tm_shape(tree_world_data) + 
+  tm_borders() + 
+  tm_fill(col = "Tree density (trees per km2)", 
+          title = "Tree Density (trees per km^2)") +
+  tm_layout(main.title = "Tree Density: trees per km^2 by country", main.title.position = "center") +
+  tm_compass(type = "8star", position = c("left", "center")) +
+  tm_scale_bar(text.size = 2) +
+  tm_credits(text = "Crowther, T. W., H. B. Glick, K. R. Covey, C. Bettigole, D. S. Maynard, S. M. Thomas, J. R. Smith, et al. 2015. “Mapping Tree Density at a Global Scale.” Nature 525 (7568): 201–5. https://doi.org/10.1038/nature14967.
+", width = 1.0)
+```
+
+```{r}
 
 ```
 
