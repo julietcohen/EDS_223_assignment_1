@@ -37,6 +37,10 @@ world_data <- world %>%
 # prevent scientific notation in R session
 options(scipen = 999)
 
+# check projection of data
+st_crs(world_data) #WGS84, appropriate projection for world map
+st_crs(tree_data) #NA, no geometry, will join data to world data
+
 # view column names in each dataset
 colnames(tree_data)
 colnames(world_data)
@@ -63,8 +67,14 @@ max(tree_world_data$tree_density_trees_per_km2, na.rm = TRUE)
 
 
 ```{r}
-# make legend title
+# create legend title
 legend_title = expression("Tree Density (trees/km"^2*")")
+
+# create map figure caption
+map_caption = expression("Tree density data was obtained from 429,775 ground-sourced measurements collected from international forestry databases combined with biome-level spatial models to predict global tree density at 1 km"^2*" resolution. Criteria for a tree is specified as a plant with woody stems larger than 10 cm diameter at breast height.")
+
+# create map data citation
+map_citation = expression("Crowther, T. W., H. B. Glick, K. R. Covey, C. Bettigole, D. S. Maynard, S. M. Thomas, J. R. Smith, et al. 2015. “Mapping Tree Density at a Global Scale.” Nature 525 (7568): 201–5. https://doi.org/10.1038/nature14967.")
 
 # make a world map of tree density
 tm_shape(tree_world_data) + 
@@ -72,21 +82,33 @@ tm_shape(tree_world_data) +
   tm_fill(col = "tree_density_trees_per_km2", 
           title = legend_title,
           textNA = "No data",
-          colorNA = "gray80",
+          colorNA = "gray65",
           style = "jenks",
-          palette = "Greens") +
+          labels = c("0 - 7,059", "7,060 - 18,989", "18,990 - 32,490", "32,491 - 49,894", "49,895 - 72,644"),
+          palette = "Greens",
+          legend.format = list(text.align = "right"),
+          legend.reverse = TRUE) +
   tm_layout(main.title = "Global Tree Density", 
             main.title.position = "center",
+            main.title.size = 1.5,
             bg.color = "lightblue3") +
   tm_compass(type = "8star",
              size = 2,
              position = c("left", "center")) +
-  tm_scale_bar(text.size = 1.5,
-               breaks = c(0, 2500, 5000, 7500, 10000),
-               position = "right", "bottom") +
-  tm_credits(text = "Crowther, T. W., H. B. Glick, K. R. Covey, C. Bettigole, D. S. Maynard, S. M. Thomas, J. R. Smith, et al. 2015. “Mapping Tree Density at a Global Scale.” Nature 525 (7568): 201–5. https://doi.org/10.1038/nature14967.", 
+  #tm_scale_bar(text.size = 1.5,
+               #breaks = c(0, 2500, 5000, 7500, 10000),
+               #position = "right", "bottom") +
+  tm_credits(text = map_citation, 
              width = 1.0,
-             position = c("right", "bottom"))
+             position = c("right", "bottom"),
+             align = "left") +
+  tm_layout(legend.outside = TRUE,
+            legend.outside.position = "right",
+            legend.frame = TRUE,
+            legend.frame.lwd = 0.5,
+            legend.bg.color = "lightblue3") +
+  tmap_design_mode(design.mode = FALSE) # use TRUE if want to use
+
 
 # run code to see possible color palettes
 # tmaptools::palette_explorer()
@@ -95,11 +117,12 @@ tm_shape(tree_world_data) +
 
 
 #### Things to do
-# change scale bar, maybe we leave out because technically distance is not the same for each latitude
-# include graticules?, maybe not
-# fix legend right align?, shift up??
-# fix/write caption
+# add in caption and citation (create citation)
 
+# fix legend right align?, fix positioning (MAYBE, syd)
+# fix legend bins, need decimals (ask Niklas)
+# determine if keep units trees/km2 after each symbol legend bin (ask Niklas)
+# fix formatting, not too much white space, maybe frame the entire map + 
 ```
 
 
