@@ -1,0 +1,117 @@
+---
+title: "EDS 223: Assignment 1"
+author: "Juliet Cohen & Sydney Rilum"
+date: "10/4/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(RColorBrewer)
+library(rgeos)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(sf)
+library(sp)
+library(spData)
+library(spDataLarge)
+library(tidyverse)
+library(janitor)
+library(tmap)
+library(paletteer)
+library(readr)
+library(shinyjs)
+```
+
+```{r}
+# Load trees dataset into environment
+tree_data <- read_csv("https://raw.githubusercontent.com/owid/owid-datasets/master/datasets/Tree%20density%20(Crowther%20et%20al.%202015)/Tree%20density%20(Crowther%20et%20al.%202015).csv") %>% 
+  clean_names()
+
+# Load world dataset from 'spData' package into environment
+world_data <- world %>% 
+  clean_names()
+```
+
+```{r}
+# prevent scientific notation in R session
+options(scipen = 999)
+
+# view column names in each dataset
+colnames(tree_data)
+colnames(world_data)
+```
+
+```{r}
+# match country name column titles in each dataset in order to join
+colnames(tree_data)[which(names(tree_data) == "entity")] <- "name_long"
+
+# merge the tree data with world data
+tree_world_data <- left_join(world_data, tree_data)
+```
+
+```{r}
+# check the class of data
+class(tree_world_data) # sf, data frame
+class(tree_world_data$tree_density_trees_per_km2) # numeric
+
+# check the range of tree density values, disregarding NA values
+min(tree_world_data$tree_density_trees_per_km2, na.rm = TRUE)
+max(tree_world_data$tree_density_trees_per_km2, na.rm = TRUE)
+# range is 0 - 72643 trees per km2
+```
+
+
+```{r}
+# make legend title
+legend_title = expression("Tree Density (trees/km"^2*")")
+
+# make a world map of tree density
+tm_shape(tree_world_data) + 
+  tm_borders() + 
+  tm_fill(col = "tree_density_trees_per_km2", 
+          title = legend_title,
+          textNA = "No data",
+          colorNA = "gray80",
+          style = "jenks",
+          palette = "Greens") +
+  tm_layout(main.title = "Global Tree Density", 
+            main.title.position = "center",
+            bg.color = "lightblue3") +
+  tm_compass(type = "8star",
+             size = 2,
+             position = c("left", "center")) +
+  tm_scale_bar(text.size = 1.5,
+               breaks = c(0, 2500, 5000, 7500, 10000),
+               position = "right", "bottom") +
+  tm_credits(text = "Crowther, T. W., H. B. Glick, K. R. Covey, C. Bettigole, D. S. Maynard, S. M. Thomas, J. R. Smith, et al. 2015. “Mapping Tree Density at a Global Scale.” Nature 525 (7568): 201–5. https://doi.org/10.1038/nature14967.", 
+             width = 1.0,
+             position = c("right", "bottom"))
+
+# run code to see possible color palettes
+# tmaptools::palette_explorer()
+
+
+
+
+#### Things to do
+# change scale bar, maybe we leave out because technically distance is not the same for each latitude
+# include graticules?, maybe not
+# fix legend right align?, shift up??
+# fix/write caption
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
