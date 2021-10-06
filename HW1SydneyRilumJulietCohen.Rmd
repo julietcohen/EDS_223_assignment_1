@@ -76,8 +76,21 @@ map_caption = expression("Tree density data was obtained from 429,775 ground-sou
 # create map data citation
 map_citation = expression("Crowther, T. W., H. B. Glick, K. R. Covey, C. Bettigole, D. S. Maynard, S. M. Thomas, J. R. Smith, et al. 2015. “Mapping Tree Density at a Global Scale.” Nature 525 (7568): 201–5. https://doi.org/10.1038/nature14967.")
 
+
+# use bbox to extend margins of map
+bbox_new <- st_bbox(tree_world_data) # current bounding box
+
+xrange <- bbox_new$xmax - bbox_new$xmin # range of x values
+yrange <- bbox_new$ymax - bbox_new$ymin # range of y values
+
+ bbox_new[1] <- bbox_new[1] - (0.2 * xrange) # xmin - left
+# bbox_new[3] <- bbox_new[3] + (0.25 * xrange) # xmax - right
+# bbox_new[2] <- bbox_new[2] - (0.25 * yrange) # ymin - bottom
+# bbox_new[4] <- bbox_new[4] + (0.2 * yrange) # ymax - top
+
+
 # make a world map of tree density
-tm_shape(tree_world_data) + 
+tm_shape(tree_world_data, bbox = bbox_new) + 
   tm_borders() + 
   tm_fill(col = "tree_density_trees_per_km2", 
           title = legend_title,
@@ -91,10 +104,12 @@ tm_shape(tree_world_data) +
   tm_layout(main.title = "Global Tree Density", 
             main.title.position = "center",
             main.title.size = 1.5,
+            title = "Tree density data was obtained from 429,775 ground-sourced measurements collected from international forestry databases combined with biome-level spatial models to predict global tree density at 1 km^2* resolution. Criteria for a tree is specified as a plant with woody stems larger than 10 cm diameter at breast height.",
+            title.size = 5,
             bg.color = "lightblue3") +
   tm_compass(type = "8star",
              size = 2,
-             position = c("left", "center")) +
+             position = c("left", "top")) +
   #tm_scale_bar(text.size = 1.5,
                #breaks = c(0, 2500, 5000, 7500, 10000),
                #position = "right", "bottom") +
@@ -102,11 +117,11 @@ tm_shape(tree_world_data) +
              width = 1.0,
              position = c("right", "bottom"),
              align = "left") +
-  tm_layout(legend.outside = TRUE,
-            legend.outside.position = "right",
-            legend.frame = TRUE,
-            legend.frame.lwd = 0.5,
-            legend.bg.color = "lightblue3") +
+  #tm_layout(#legend.outside = TRUE,
+            #legend.outside.position = "right",
+            #legend.frame = TRUE,
+            #legend.frame.lwd = 0.5,
+            #legend.bg.color = "lightblue3") +
   tmap_design_mode(design.mode = FALSE) # use TRUE if want to use
 
 
