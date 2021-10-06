@@ -369,7 +369,113 @@ tm_shape(tree_world_data) +
 ", width = 1.0)
 ```
 
-```{r}
 
+Real data:
+
+```{r}
+library(janitor)
+# Load trees dataset into environment
+tree_data <- read_csv("https://raw.githubusercontent.com/owid/owid-datasets/master/datasets/Tree%20density%20(Crowther%20et%20al.%202015)/Tree%20density%20(Crowther%20et%20al.%202015).csv") %>% 
+  clean_names()
+
+# Load world dataset from 'spData' package into environment
+world_data <- world %>% 
+  clean_names()
+```
+
+```{r}
+# prevent scientific notation in R session
+options(scipen = 999)
+
+# check projection of data
+st_crs(world_data) #WGS84, appropriate projection for world map
+st_crs(tree_data) #NA, no geometry, will join data to world data
+
+# view column names in each dataset
+colnames(tree_data)
+colnames(world_data)
+```
+
+```{r}
+# match country name column titles in each dataset in order to join
+colnames(tree_data)[which(names(tree_data) == "entity")] <- "name_long"
+
+# merge the tree data with world data
+tree_world_data <- left_join(world_data, tree_data)
+```
+
+```{r}
+# check the class of data
+class(tree_world_data) # sf, data frame
+class(tree_world_data$tree_density_trees_per_km2) # numeric
+
+# check the range of tree density values, disregarding NA values
+min(tree_world_data$tree_density_trees_per_km2, na.rm = TRUE)
+max(tree_world_data$tree_density_trees_per_km2, na.rm = TRUE)
+# range is 0 - 72643 trees per km2
+```
+
+
+
+
+
+```{r}
+# create legend title
+legend_title = expression("Tree Density (trees/km"^2*")")
+
+# create map figure caption
+map_caption = expression("Tree density data was obtained from 429,775 ground-sourced measurements collected from international forestry databases combined with biome-level spatial models to predict global tree density at 1 km"^2*" resolution. Criteria for a tree is specified as a plant with woody stems larger than 10 cm diameter at breast height.")
+
+# create map data citation
+map_citation = expression("Crowther, T. W., H. B. Glick, K. R. Covey, C. Bettigole, D. S. Maynard, S. M. Thomas, J. R. Smith, et al. 2015. “Mapping Tree Density at a Global Scale.” Nature 525 (7568): 201–5. https://doi.org/10.1038/nature14967.")
+
+# make a world map of tree density
+tm_shape(tree_world_data) + 
+  tm_borders() + 
+  tm_fill(col = "tree_density_trees_per_km2", 
+          title = legend_title,
+          textNA = "No data",
+          colorNA = "gray65",
+          style = "jenks",
+          labels = c("0 - 7,059", "7,060 - 18,989", "18,990 - 32,490", "32,491 - 49,894", "49,895 - 72,644"),
+          palette = "Greens",
+          legend.format = list(text.align = "right"),
+          legend.reverse = TRUE) +
+  tm_layout(main.title = "Global Tree Density", 
+            main.title.position = "center",
+            main.title.size = 1.5,
+            bg.color = "lightblue3") +
+  tm_compass(type = "8star",
+             size = 2,
+             position = c("left", "center")) +
+  #tm_scale_bar(text.size = 1.5,
+               #breaks = c(0, 2500, 5000, 7500, 10000),
+               #position = "right", "bottom") +
+  tm_credits(text = map_citation, 
+             width = 1.0,
+             position = c("right", "bottom"),
+             align = "left") +
+  tm_layout(legend.outside = TRUE,
+            legend.outside.position = "right",
+            legend.frame = TRUE,
+            legend.frame.lwd = 0.5,
+            legend.bg.color = "lightblue3",
+            title = "map_citation") +
+  tmap_design_mode(design.mode = FALSE) # use TRUE if want to use
+
+
+# run code to see possible color palettes
+# tmaptools::palette_explorer()
+
+
+
+
+#### Things to do
+# add in caption and citation (create citation)
+
+# fix legend right align?, fix positioning (MAYBE, syd)
+# fix legend bins, need decimals (ask Niklas)
+# determine if keep units trees/km2 after each symbol legend bin (ask Niklas)
+# fix formatting, not too much white space, maybe frame the entire map + 
 ```
 
