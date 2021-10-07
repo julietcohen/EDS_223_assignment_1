@@ -82,7 +82,6 @@ tree_map = tm_shape(tree_world_data) +
           textNA = "No data",
           colorNA = "gray65",
           style = "jenks",
-          labels = c("0 - 7,059", "7,060 - 18,989", "18,990 - 32,490", "32,491 - 49,894", "49,895 - 72,644"),
           palette = "Greens",
           legend.format = list(text.align = "right"),
           legend.reverse = TRUE) +
@@ -91,7 +90,7 @@ tree_map = tm_shape(tree_world_data) +
             main.title.size = 1.5,
             bg.color = "lightblue3") +
   tm_compass(type = "8star",
-             size = 1.5,
+             size = 2.5,
              position = c("left", "center")) +
   tm_credits(text = map_credits,
              size = 0.5,
@@ -99,11 +98,7 @@ tree_map = tm_shape(tree_world_data) +
              align = "right") +
   tm_layout(legend.outside = TRUE,
             legend.outside.position = "right",
-            frame.double.line = TRUE
-            #legend.frame = TRUE,
-            #legend.frame.lwd = 0.5,
-            #legend.bg.color = "lightblue3"
-            )
+            frame.double.line = TRUE)
 
 # save tree map as a png
 tmap_save(tree_map, "tree_map.png")
@@ -117,9 +112,3 @@ tmap_save(tree_map, "tree_map.png")
 </center>
 
 Tree density data was obtained from 429,775 ground-sourced measurements collected from international forestry databases and combined with biome-level spatial models to predict global tree density at 1 km^2^ resolution. Criteria for a tree was specified as a plant with woody stems larger than 10 cm diameter at breast height. (Data sources: Map was rendered in R using tmap. World map data was obtained from the spData package. Tree density data was obtained from [Crowther, T. W., H. B. Glick, K. R. Covey, C. Bettigole, D. S. Maynard, S. M. Thomas, J. R. Smith, *et al.* 2015. “Mapping Tree Density at a Global Scale.” *Nature* 525 (7568):201–5.](https://doi.org/10.1038/nature14967)).
-
-
-# Things to do
-- fix legend bins, need decimals (ask Niklas)
-- determine if keep units trees/km2 after each symbol legend bin (ask Niklas)
-- fix formatting, not too much white space, maybe frame the entire map
