@@ -99,6 +99,7 @@ tree_map = tm_shape(tree_world_data) +
              align = "right") +
   tm_layout(legend.outside = TRUE,
             legend.outside.position = "right",
+            frame.double.line = TRUE
             #legend.frame = TRUE,
             #legend.frame.lwd = 0.5,
             #legend.bg.color = "lightblue3"
